@@ -94,7 +94,8 @@ sub format_message {
   # Build message
   my $message = "commit " . $$commit->{'id'} . "\n";
   $message .= "Author: " . get_name_email($$commit->{'author'}) . "\n";
-  $message .= "Date: " . get_rfc2822_date($$commit->{'timestamp'}) . "\n\n";
+  $message .= "Date: " . get_rfc2822_date($$commit->{'timestamp'}) . "\n";
+  $message .= "URL: " . $$commit->{'url'} . "\n\n";
   $message .= $$commit->{'message'} . "\n---\n";
 
   # List files with additions/deletions
