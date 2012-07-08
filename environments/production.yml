@@ -20,3 +20,6 @@ api_key: foobar
 
 # Commit mailing list
 mailing_list:
+
+# SMTP server
+smtp:

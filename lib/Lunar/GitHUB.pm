@@ -124,6 +124,7 @@ sub send_email {
   my ($repo, $from, $date, $subject, $message) = @_;
 
   my %mail = (
+    smtp => config->{smtp},
     To => config->{mailing_list},
     From => $from,
     Subject => "<$repo> $subject",
