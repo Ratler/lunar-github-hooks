@@ -7,7 +7,7 @@ use DateTime::Format::ISO8601;
 
 use Data::Dumper;
 
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 
 get '/' => sub {
   redirect "http://lunar-linux.org/";
@@ -122,7 +122,7 @@ sub format_message {
       } elsif ($file->{'status'} eq 'added') {
         $message .= "--- /dev/null" . "\n+++ b/" . $file->{'filename'} . "\n";
       } elsif ($file->{'status'} eq 'removed') {
-        $message .= "--- a/" . $file->{'filename'} - "\n+++ /dev/null\n";
+        $message .= "--- a/" . $file->{'filename'} . "\n+++ /dev/null\n";
       }
       $message .= $file->{'patch'} . "\n";
     }
