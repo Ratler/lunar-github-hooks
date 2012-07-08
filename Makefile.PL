@@ -20,6 +20,7 @@ WriteMakefile(
         'DateTime::Format::Strptime' => 0,
         'DateTime::Format::ISO8601' => 0,
         'Data::Dumper' => 0,
+        'JSON' => 0,
     },
     META_MERGE => {
       'resources' => {
