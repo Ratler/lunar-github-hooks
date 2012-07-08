@@ -7,7 +7,7 @@ use DateTime::Format::ISO8601;
 
 use Data::Dumper;
 
-our $VERSION = '0.5';
+our $VERSION = '0.6';
 
 get '/' => sub {
   redirect "http://lunar-linux.org/";
