@@ -85,7 +85,7 @@ sub get_subject_line {
 
 sub get_name_email {
   my $info = shift;
-  return $info->{'name'} . " <" . $info->{'email'} . ">"
+  return $info->{'name'} . " <" . $info->{'email'} . ">";
 }
 
 sub format_message {
@@ -100,22 +100,32 @@ sub format_message {
   # List files with additions/deletions
   my $nr_files_changed = scalar(@{$$commit->{'patch'}->{'files'}});
   foreach my $file (@{$$commit->{'patch'}->{'files'}}) {
-    $message .= sprintf("  %-60s %-10s\n", $file->{'filename'}, "+" . $file->{'additions'} . "/-" . $file->{'deletions'})
+    my $counter = 0;
+    if ($file->{'changes'} > 0) {
+      $message .= sprintf("  %-60s %-10s\n", $file->{'filename'}, "+" . $file->{'additions'} . "/-" . $file->{'deletions'});
+    } else {   #for now we assume this is a renamed file heaven forbid if I'm wrong ;)
+      $message .= "  " . $$commit->{'removed'}[$counter] . " -> " . $$commit->{'added'}[$counter] . "\n";
+    }
+    $counter++;
   }
   # Stats
   $message .= "  $nr_files_changed files changed, " . $$commit->{'patch'}->{'stats'}->{'additions'} . " insertions (+), " . $$commit->{'patch'}->{'stats'}->{'deletions'} . " deletions (-)\n\n";
 
   # Diffs
   foreach my $file (@{$$commit->{'patch'}->{'files'}}) {
-    # Header
-    if ($file->{'status'} eq 'modified') {
-      $message .= "--- a/" . $file->{'filename'} . "\n+++ b/" . $file->{'filename'} . "\n";
-    } elsif ($file->{'status'} eq 'added') {
-      $message .= "--- a/dev/null" . "\n+++ b/" . $file->{'filename'} . "\n";
+    # Do not show a diff for non-modified files (might just be renamed)
+    if ($file->{'changes'} > 0) {
+      # Header
+      if ($file->{'status'} eq 'modified') {
+        $message .= "--- a/" . $file->{'filename'} . "\n+++ b/" . $file->{'filename'} . "\n";
+      } elsif ($file->{'status'} eq 'added') {
+        $message .= "--- /dev/null" . "\n+++ b/" . $file->{'filename'} . "\n";
+      } elsif ($file->{'status'} eq 'removed') {
+        $message .= "--- a/" . $file->{'filename'} - "\n+++ /dev/null\n";
+      }
+      $message .= $file->{'patch'} . "\n";
     }
-    $message .= $file->{'patch'} . "\n";
   }
-
   return $message . "\n";
 }
 
