@@ -100,8 +100,8 @@ sub format_message {
 
   # List files with additions/deletions
   my $nr_files_changed = scalar(@{$$commit->{'patch'}->{'files'}});
+  my $counter = 0;
   foreach my $file (@{$$commit->{'patch'}->{'files'}}) {
-    my $counter = 0;
     if ($file->{'changes'} > 0) {
       $message .= sprintf("  %-60s %-10s\n", $file->{'filename'}, "+" . $file->{'additions'} . "/-" . $file->{'deletions'});
     } else {   #for now we assume this is a renamed file heaven forbid if I'm wrong ;)
