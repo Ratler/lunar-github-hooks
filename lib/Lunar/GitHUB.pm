@@ -25,6 +25,10 @@ post '/api/receivehook/:apikey' => sub {
   }
 
   my $data = from_json(params->{'payload'});
+
+  # For now we only want 'refs/heads/master', disregard all other branches
+  warning "Skipping mail for ref: " . $data->{'ref'} and return unless ($data->{'ref'} eq 'refs/heads/master');
+
   my $repo = $data->{'repository'}->{'name'};
 
   foreach my $commit (@{$data->{'commits'}}) {
@@ -49,7 +53,6 @@ post '/api/receivehook/:apikey' => sub {
 
     # repo, from, commit_date, subject, message
     send_email($repo, $from, $commit->{'timestamp'}, $subject, $message);
-    debug "Environment: " . setting('environment');
   }
 };
 
