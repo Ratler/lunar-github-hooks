@@ -1,4 +1,4 @@
-package Lunar::GitHUB::api::receivehook;
+package Lunar::GitHUB::api::ReceiveHook;
 use Dancer ':syntax';
 use Mail::Sendmail;
 use LWP;
