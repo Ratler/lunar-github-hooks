@@ -102,7 +102,7 @@ sub format_message {
 
   # List files with additions/deletions
   my $nr_files_changed = scalar(@{$$commit->{'patch'}->{'files'}});
-  my ($counter, $rcounter, $acounter, $str_len) = 0;
+  my ($counter, $rcounter, $acounter, $str_len) = (0, 0, 0, 0);
   my @changes;
 
   foreach my $file (@{$$commit->{'patch'}->{'files'}}) {
