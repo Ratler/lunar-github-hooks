@@ -25,10 +25,13 @@ post '/receivehook/:apikey' => sub {
   # For now we only want 'refs/heads/master', disregard all other branches
   warning "Skipping mail for ref: " . $data->{'ref'} and return unless ($data->{'ref'} eq 'refs/heads/master');
 
+  # Name of the repository
   my $repo = $data->{'repository'}->{'name'};
+  # Owner of repository, either private or an organization
+  my $repo_owner = $data->{'repository'}->{'owner'}->{'name'};
 
   foreach my $commit (@{$data->{'commits'}}) {
-    my $patch_github = get_patch("https://api.github.com/repos/lunar-linux/$repo/commits/" . $commit->{'id'});
+    my $patch_github = get_patch("https://api.github.com/repos/${repo_owner}/${repo}/commits/" . $commit->{'id'});
 
     if (not defined $patch_github) {
       warning "Failed to get a patch for " . $commit->{'id'};
@@ -99,17 +102,42 @@ sub format_message {
 
   # List files with additions/deletions
   my $nr_files_changed = scalar(@{$$commit->{'patch'}->{'files'}});
-  my $counter = 0;
+  my ($counter, $rcounter, $acounter, $str_len) = 0;
+  my @changes;
+
   foreach my $file (@{$$commit->{'patch'}->{'files'}}) {
     if ($file->{'changes'} > 0) {
-      $message .= sprintf("  %-60s %-10s\n", $file->{'filename'}, "+" . $file->{'additions'} . "/-" . $file->{'deletions'});
+      push @changes, {filename => $file->{'filename'}, changes => "+" . $file->{'additions'} . "/-" . $file->{'deletions'}};
+      if ($file->{'status'} eq 'added') {
+        $acounter++;
+      } elsif ($file->{'status'} eq 'removed') {
+        $rcounter++;
+      }
     } else {   #for now we assume this is a renamed file heaven forbid if I'm wrong ;)
-      $message .= "  " . $$commit->{'removed'}[$counter] . " -> " . $$commit->{'added'}[$counter] . "\n";
+      push @changes, {filename => $$commit->{'removed'}[$counter+$rcounter] . " -> " . $$commit->{'added'}[$counter+$acounter]};
+      $counter++;
     }
-    $counter++;
+    # Find longest string for formatting
+    $str_len = length($changes[-1]{'filename'}) if length($changes[-1]{'filename'}) > $str_len;
   }
+
+  # Formatted output
+  for my $ref (@changes) {
+    if ($ref->{'changes'}) {
+      $message .= sprintf("  %-*s | %-10s\n", $str_len, $ref->{'filename'}, $ref->{'changes'});
+    } else {
+      $message .= sprintf("  %-*s\n", $str_len, $ref->{'filename'});
+    }
+  }
+
   # Stats
-  $message .= "  $nr_files_changed files changed, " . $$commit->{'patch'}->{'stats'}->{'additions'} . " insertions (+), " . $$commit->{'patch'}->{'stats'}->{'deletions'} . " deletions (-)\n\n";
+  my $additions = $$commit->{'patch'}->{'stats'}->{'additions'};
+  my $deletions = $$commit->{'patch'}->{'stats'}->{'deletions'};
+  $message .= "  $nr_files_changed";
+  $message .= $nr_files_changed > 1 ? " files changed" : " file changed";
+  $message .= ", " . $additions . ($additions > 1 ? " insertions(+)" : " insertion(+)") if $additions > 0;
+  $message .= ", " . $deletions . ($deletions > 1 ? " deletions(-)" : " deletion(-)") if $deletions > 0;
+  $message .="\n\n";
 
   # Diffs
   foreach my $file (@{$$commit->{'patch'}->{'files'}}) {
