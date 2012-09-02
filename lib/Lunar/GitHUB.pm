@@ -1,7 +1,7 @@
 package Lunar::GitHUB;
 use Dancer ':syntax';
 
-our $VERSION = '0.9';
+our $VERSION = '0.9.1';
 
 use Lunar::GitHUB::api::ReceiveHook;
 
