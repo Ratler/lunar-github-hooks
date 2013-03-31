@@ -166,7 +166,6 @@ sub send_email {
     To => config->{mailing_list},
     From => $from,
     Subject => "<$repo> $subject",
-    Date => get_rfc2822_date($date),
     Message => $message
   );
 
